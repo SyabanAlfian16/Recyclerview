@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.cobarecylerview'
+    namespace 'com.example.belajarsqlite'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.example.cobarecylerview"
+        applicationId "com.example.belajarsqlite"
         minSdk 26
         targetSdk 33
         versionCode 1

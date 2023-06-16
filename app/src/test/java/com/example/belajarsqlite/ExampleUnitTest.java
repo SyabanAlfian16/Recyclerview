@@ -1,4 +1,4 @@
-package com.example.cobarecylerview;
+package com.example.belajarsqlite;
 
 import org.junit.Test;
 

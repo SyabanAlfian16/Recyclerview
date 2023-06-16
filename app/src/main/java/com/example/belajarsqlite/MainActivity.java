@@ -1,19 +1,25 @@
-package com.example.cobarecylerview;
+package com.example.belajarsqlite;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.belajarsqlite.R;
+
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    ArrayList<Mhs> mhsList ;
+    ArrayList<MhsModel> mhsList ;
+    MhsModel mm;
+    DbHelper db ;
+    boolean isEdit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,8 +33,23 @@ public class MainActivity extends AppCompatActivity {
 
         mhsList = new ArrayList<>();
 
-        Intent intent_list = new Intent(MainActivity.this, ListmhsActivity.class);
+        isEdit = false;
 
+        Intent intent_main = getIntent();
+        if (intent_main.hasExtra("mhsData")){
+            mm = intent_main.getExtras().getParcelable("mhsData");
+            edNama.setText(mm.getNama());
+            edNIM.setText(mm.getNim());
+            edNoHp.setText(mm.getNoHp());
+
+            isEdit = true;
+            btnSimpan.setBackgroundColor(Color.YELLOW);
+            btnSimpan.setText("Edit");
+        }
+
+        db = new DbHelper(getApplicationContext());
+
+        boolean finalIsEdit = isEdit;
         btnSimpan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -39,14 +60,30 @@ public class MainActivity extends AppCompatActivity {
                 if (isian_nama.isEmpty() || isian_nim.isEmpty() || isian_noHp.isEmpty()){
                     Toast.makeText(getApplicationContext(), "Isian masih kosong", Toast.LENGTH_SHORT).show();
                 }else{
-                    mhsList.add(new Mhs(isian_nama, isian_nim, isian_noHp));
+                    boolean stts ;
 
-                    edNama.setText("");
-                    edNIM.setText("");
-                    edNoHp.setText("");
+                    if (!isEdit){
+                        mm = new MhsModel(-1, isian_nama, isian_nim, isian_noHp);
+                        stts = db.simpan(mm);
+                    }else {
+                        mm = new MhsModel(mm.getId(), isian_nama, isian_nim, isian_noHp);
+                        stts = db.ubah(mm);
+                    }
 
-                    intent_list.putParcelableArrayListExtra("mhsList", mhsList);
-                    startActivity(intent_list);
+                    if (stts){
+                        edNama.setText("");
+                        edNIM.setText("");
+                        edNoHp.setText("");
+
+                        Toast.makeText(getApplicationContext(), "Data Berhasil Disimpan", Toast.LENGTH_SHORT).show();
+                    }
+                    else {
+                        Toast.makeText(getApplicationContext(), "Data gagal disimpan", Toast.LENGTH_SHORT).show();
+                    }
+
+
+                    //intent_list.putParcelableArrayListExtra("mhsList", mhsList);
+                    //startActivity(intent_list);
                 }
             }
         });
@@ -56,9 +93,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
+                mhsList = db.list();
+
                 if (mhsList.isEmpty()){
                     Toast.makeText(getApplicationContext(), "Belum ada data", Toast.LENGTH_SHORT).show();
                 }else {
+                    Intent intent_list = new Intent(MainActivity.this, ListmhsActivity.class);
                     intent_list.putParcelableArrayListExtra("mhsList", mhsList);
                     startActivity(intent_list);
                 }
